@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Form</title>
+    <link rel="stylesheet" th:href="@{/CSS/navbar.css}">
+    <!-- Include Bootstrap CSS for styling (optional) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Include Google Places API script -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyATCn5mbqGNc5-VMUsxRy1NS648Camoqcg&libraries=places"></script>
+</head>
+<body>
+
+<div class="container mt-4">
+    <nav> 
+        <div class="nav-content">
+            <a class="logo" href="#" th:href="@{/}">Weather Forecast</a>
+            <div class="nav-icon">
+                <div class="bar one"></div>
+                <div class="bar two"></div>
+            </div>
+
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/bookmarks">Bookmark</a>
+
+                <br>
+                <a href="/login">Login</a>
+            </div>
+            
+            <form th:action=@{/search} id="location-form" onsubmit="event.preventDefault();" method="get">
+                <input id="location-input" type="text" placeholder="Enter a location" autocomplete="off">
+                <button type="submit" onclick="getLocationDetails()"><ion-icon name="search-outline" ></ion-icon></button>
+                <ui id="suggestion"></ui>
+            </form> 
+        </div>
+    </nav>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script>
+        const inputField = document.getElementById('autocomplete');
+        const suggestionsList = document.getElementById('suggestions');
+
+        inputField.addEventListener('input', function() {
+            const inputValue = inputField.value.toLowerCase();
+
+            // Clear suggestions if the input field is empty
+            if (inputValue === '') {
+                clearSuggestions();
+                return;
+            }
+
+            const suggestions = countries.filter(country => country.toLowerCase().startsWith(inputValue));
+            displaySuggestions(suggestions);
+        });
+
+        function displaySuggestions(suggestions) {
+            suggestionsList.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                li.addEventListener('click', function() {
+                    inputField.value = suggestion;
+                    clearSuggestions();
+                });
+                suggestionsList.appendChild(li);
+            });
+
+            // Display the suggestions list
+            suggestionsList.style.display = 'block';
+        }
+
+        function clearSuggestions() {
+            suggestionsList.innerHTML = '';
+            // Hide the suggestions list
+            suggestionsList.style.display = 'none';
+        }
+    </script>
+    <script>
+        const navIcon = document.querySelector(".nav-icon");
+        const nav = document.querySelector("nav");
+
+        navIcon.onclick = function () {
+            nav.classList.toggle('show');
+        }
+    </script>
+       
+    <h2>Location Form</h2>
+    <p th:text="${usercurrent}">User ID: </p>
+    <form action="#" th:action="@{/saveLocation}" th:object="${location}" method="post">
+        <div class="form-group">
+            <label for="name">Location Name</label>
+            <input type="text" class="form-control" id="name" th:field="*{name}" autocomplete="off">
+        </div>
+        <div class="form-group" style="display: none;">
+            <label for="latitude">Latitude</label>
+            <input type="text" class="form-control" id="latitude" th:field="*{latitude}">
+        </div>
+        <div class="form-group" style="display: none;">
+            <label for="longitude">Longitude</label>
+            <input type="text" class="form-control" id="longitude" th:field="*{longitude}">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<!-- Your custom JavaScript for autocomplete -->
+<script>
+    // Initialize Google Places Autocomplete
+    function initAutocomplete() {
+        var options = {
+            types: ['(cities)'],
+        };
+        var input = document.getElementById('name');
+        var autocomplete = new google.maps.places.Autocomplete(input);
+
+        autocomplete.addListener('place_changed', function () {
+            var place = autocomplete.getPlace();
+            
+            // Populate latitude and longitude fields
+            document.getElementById('latitude').value = place.geometry.location.lat();
+            document.getElementById('longitude').value = place.geometry.location.lng();
+
+            // Populate location name field
+            document.getElementById('name').value = place.name;
+        });
+    }
+
+    // Trigger the autocomplete function when the page loads
+    google.maps.event.addDomListener(window, 'load', initAutocomplete);
+</script>
+
+<!-- Include Bootstrap JS (optional) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
